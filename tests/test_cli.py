@@ -1,5 +1,6 @@
 """Exercise the public CLI, not only its internal helpers."""
 
+from click.utils import strip_ansi
 from typer.testing import CliRunner
 
 from fileflow.cli import app
@@ -10,9 +11,10 @@ runner = CliRunner()
 def test_help_mentions_safety_controls():
     result = runner.invoke(app, ["organize", "--help"])
     assert result.exit_code == 0
-    assert "--dry-run" in result.output
-    assert "--destination" in result.output
-    assert "--category" in result.output
+    help_text = strip_ansi(result.output)
+    assert "--dry-run" in help_text
+    assert "--destination" in help_text
+    assert "--category" in help_text
 
 
 def test_dry_run_does_not_create_destination(folders):

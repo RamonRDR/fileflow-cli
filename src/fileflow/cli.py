@@ -20,6 +20,11 @@ app = typer.Typer(
 console = Console()
 
 
+@app.callback()
+def main() -> None:
+    """Command group entry point."""
+
+
 def _show_plan(plan: Plan, *, dry_run: bool) -> None:
     table = Table(title="Planned moves" if dry_run else "FileFlow operations")
     table.add_column("From", overflow="fold")
