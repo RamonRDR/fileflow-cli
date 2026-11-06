@@ -34,8 +34,8 @@ jobs:
       - name: Ruff lint
         run: ruff check .
 
-      - name: Ruff formatting
-        run: ruff format --check .
+      - name: Ruff formatting diagnostics
+        run: ruff format --diff .
 
       - name: Pytest
         run: python -m pytest -q

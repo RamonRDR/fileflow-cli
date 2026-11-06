@@ -3,6 +3,8 @@
 import os
 import shutil
 import stat
+from contextlib import suppress
+
 from fileflow.models import Move, MoveFailure, Plan, Result
 from fileflow.planner import ensure_no_symlink_components, fingerprint
 
@@ -46,10 +48,9 @@ def _move_one(move: Move) -> None:
         move.source.unlink()
     except Exception:
         if created:
-            try:
+            # Preserve the original error, even if cleanup is denied.
+            with suppress(OSError):
                 target.unlink(missing_ok=True)
-            except OSError:
-                pass  # Preserve the original error; partial file needs manual inspection.
         raise
 
 

@@ -1,11 +1,11 @@
 """Immutable planning and execution models."""
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 
 
-class SortMode(str, Enum):
+class SortMode(StrEnum):
     """Available grouping strategies."""
 
     extension = "extension"
