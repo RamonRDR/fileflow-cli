@@ -3,8 +3,6 @@
 import os
 import shutil
 import stat
-from pathlib import Path
-
 from fileflow.models import Move, MoveFailure, Plan, Result
 from fileflow.planner import ensure_no_symlink_components, fingerprint
 
