@@ -1,6 +1,7 @@
 """Exercise the public CLI, not only its internal helpers."""
 
 import re
+
 from typer.testing import CliRunner
 
 from fileflow.cli import app
