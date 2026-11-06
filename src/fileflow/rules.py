@@ -16,8 +16,14 @@ DEFAULT_CATEGORIES: dict[str, frozenset[str]] = {
 
 _CATEGORY_RE = re.compile(r"[A-Za-z][A-Za-z0-9 _-]{0,39}\Z")
 _EXTENSION_RE = re.compile(r"\.[a-z0-9][a-z0-9_+-]*(?:\.[a-z0-9][a-z0-9_+-]*)*\Z")
-_WINDOWS_RESERVED = {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)),
-                     *(f"LPT{i}" for i in range(1, 10))}
+_WINDOWS_RESERVED = {
+    "CON",
+    "PRN",
+    "AUX",
+    "NUL",
+    *(f"COM{i}" for i in range(1, 10)),
+    *(f"LPT{i}" for i in range(1, 10)),
+}
 
 
 def parse_categories(overrides: Sequence[str]) -> dict[str, frozenset[str]]:
@@ -53,17 +59,14 @@ def parse_categories(overrides: Sequence[str]) -> dict[str, frozenset[str]]:
 def file_extension(path: Path, categories: Mapping[str, frozenset[str]]) -> str:
     """Recognize configured compound extensions before falling back to suffix."""
     filename = path.name.casefold()
-    known = sorted({ext for values in categories.values() for ext in values},
-                   key=len, reverse=True)
+    known = sorted({ext for values in categories.values() for ext in values}, key=len, reverse=True)
     for extension in known:
         if filename.endswith(extension) and len(filename) > len(extension):
             return extension
     return path.suffix.casefold()
 
 
-def destination_group(
-    path: Path, mode: SortMode, categories: Mapping[str, frozenset[str]]
-) -> str:
+def destination_group(path: Path, mode: SortMode, categories: Mapping[str, frozenset[str]]) -> str:
     """Return a safe subdirectory name for an extension or category."""
     extension = file_extension(path, categories)
     if mode is SortMode.extension:

@@ -7,7 +7,10 @@ from fileflow.rules import destination_group, parse_categories
 
 
 def test_default_category_for_pdf(tmp_path):
-    assert destination_group(tmp_path / "report.PDF", SortMode.category, parse_categories(())) == "Documents"
+    assert (
+        destination_group(tmp_path / "report.PDF", SortMode.category, parse_categories(()))
+        == "Documents"
+    )
 
 
 def test_compound_archive_extension(tmp_path):

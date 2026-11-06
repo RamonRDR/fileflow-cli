@@ -68,8 +68,7 @@ def organize(
     _show_plan(plan, dry_run=dry_run)
     if dry_run:
         console.print(
-            f"[cyan]Dry run:[/cyan] {len(plan.moves)} planned, {plan.ignored} ignored, "
-            "0 moved."
+            f"[cyan]Dry run:[/cyan] {len(plan.moves)} planned, {plan.ignored} ignored, 0 moved."
         )
         return
 

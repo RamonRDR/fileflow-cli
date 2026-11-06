@@ -28,7 +28,7 @@ def test_ignores_hidden_entries_directories_and_symlinks(folders):
     symlink = source / "alias.txt"
     try:
         symlink.symlink_to(source / "ok.txt")
-    except (OSError, NotImplementedError):
+    except OSError, NotImplementedError:
         pytest.skip("Symlinks unavailable in this test environment")
     plan = build_plan(source, destination)
     assert [move.source.name for move in plan.moves] == ["ok.txt"]
@@ -53,8 +53,9 @@ def test_missing_extension_is_grouped(folders):
 def test_category_mode_custom_rules(folders):
     source, destination = folders
     (source / "paper.pdf").write_text("paper", encoding="utf-8")
-    plan = build_plan(source, destination, mode=SortMode.category,
-                      category_rules=("Research=.pdf",))
+    plan = build_plan(
+        source, destination, mode=SortMode.category, category_rules=("Research=.pdf",)
+    )
     assert plan.moves[0].destination == destination / "Research" / "paper.pdf"
 
 
@@ -109,7 +110,7 @@ def test_source_symlink_rejected(folders):
     link = source.parent / "linked"
     try:
         link.symlink_to(source, target_is_directory=True)
-    except (OSError, NotImplementedError):
+    except OSError, NotImplementedError:
         pytest.skip("Directory symlinks unavailable")
     with pytest.raises(ValueError, match="Symbolic links"):
         build_plan(link, destination)

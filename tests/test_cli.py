@@ -19,8 +19,9 @@ def test_dry_run_does_not_create_destination(folders):
     source, destination = folders
     original = source / "draft.md"
     original.write_text("draft", encoding="utf-8")
-    result = runner.invoke(app, ["organize", str(source), "--destination", str(destination),
-                                 "--dry-run"])
+    result = runner.invoke(
+        app, ["organize", str(source), "--destination", str(destination), "--dry-run"]
+    )
     assert result.exit_code == 0, result.output
     assert "1 planned" in result.output
     assert original.exists()
@@ -30,8 +31,9 @@ def test_dry_run_does_not_create_destination(folders):
 def test_cli_organizes_by_category(folders):
     source, destination = folders
     (source / "chart.png").write_bytes(b"fake-png")
-    result = runner.invoke(app, ["organize", str(source), "-d", str(destination),
-                                 "--mode", "category"])
+    result = runner.invoke(
+        app, ["organize", str(source), "-d", str(destination), "--mode", "category"]
+    )
     assert result.exit_code == 0, result.output
     assert "1 moved" in result.output
     assert (destination / "Images" / "chart.png").exists()
@@ -46,7 +48,18 @@ def test_cli_invalid_path_exits_two(folders):
 
 def test_cli_rejects_invalid_rule(folders):
     source, destination = folders
-    result = runner.invoke(app, ["organize", str(source), "-d", str(destination),
-                                 "--mode", "category", "--category", "unsafe=pdf"])
+    result = runner.invoke(
+        app,
+        [
+            "organize",
+            str(source),
+            "-d",
+            str(destination),
+            "--mode",
+            "category",
+            "--category",
+            "unsafe=pdf",
+        ],
+    )
     assert result.exit_code == 2
     assert "Invalid extensions" in result.output

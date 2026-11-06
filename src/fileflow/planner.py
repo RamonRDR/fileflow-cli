@@ -34,9 +34,11 @@ def validate_roots(source: Path, destination: Path) -> tuple[Path, Path]:
 
     actual_source = source.resolve(strict=True)
     actual_destination = destination.resolve(strict=False)
-    if (actual_source == actual_destination
-            or actual_source in actual_destination.parents
-            or actual_destination in actual_source.parents):
+    if (
+        actual_source == actual_destination
+        or actual_source in actual_destination.parents
+        or actual_destination in actual_source.parents
+    ):
         raise ValueError("Source and destination must be separate, non-overlapping directories")
 
     if not os.access(source, os.R_OK | os.X_OK):
@@ -53,9 +55,7 @@ def validate_roots(source: Path, destination: Path) -> tuple[Path, Path]:
 def _available_path(requested: Path, taken: set[str]) -> Path:
     candidate = requested
     index = 1
-    while (str(candidate).casefold() in taken
-           or candidate.exists()
-           or candidate.is_symlink()):
+    while str(candidate).casefold() in taken or candidate.exists() or candidate.is_symlink():
         candidate = requested.with_name(f"{requested.stem} ({index}){requested.suffix}")
         index += 1
     taken.add(str(candidate).casefold())

@@ -103,7 +103,7 @@ def test_destination_symlink_swap_is_rejected(folders):
     destination.mkdir()
     try:
         (destination / "txt").symlink_to(outside, target_is_directory=True)
-    except (OSError, NotImplementedError):
+    except OSError, NotImplementedError:
         pytest.skip("Directory symlinks unavailable")
 
     result = execute_plan(plan)
