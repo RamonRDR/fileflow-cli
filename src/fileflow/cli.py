@@ -106,7 +106,6 @@ def organize(
         raise typer.Exit(code=1)
 
 
-
 @app.command()
 def undo(
     manifest: Annotated[Path, typer.Argument(help="Operation manifest from an organize run.")],

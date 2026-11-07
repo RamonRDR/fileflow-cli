@@ -49,9 +49,10 @@ def test_recorded_move_manifest_and_undo_round_trip(folders):
     assert again.planned == 0
     assert again.skipped == 1
     assert again.undone == 0
-    assert json.loads(record.manifest.read_text(encoding="utf-8"))["operations"][0][
-        "status"
-    ] == "undone"
+    assert (
+        json.loads(record.manifest.read_text(encoding="utf-8"))["operations"][0]["status"]
+        == "undone"
+    )
 
 
 def test_undo_never_overwrites_original_name(folders):
