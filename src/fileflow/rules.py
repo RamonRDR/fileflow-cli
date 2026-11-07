@@ -75,3 +75,39 @@ def destination_group(path: Path, mode: SortMode, categories: Mapping[str, froze
         if extension in extensions:
             return name
     return "Other"
+
+
+def validate_exclusions(patterns: Sequence[str]) -> tuple[str, ...]:
+    """Reject malformed glob patterns; forward slashes work on every OS."""
+    result: list[str] = []
+    for pattern in patterns:
+        if (
+            not isinstance(pattern, str)
+            or not pattern.strip()
+            or "\x00" in pattern
+            or pattern.startswith(("/", "\\"))
+            or "\\" in pattern
+            or any(part == ".." for part in pattern.split("/"))
+            or re.match(r"^[A-Za-z]:", pattern)
+        ):
+            raise ValueError(f"Invalid exclusion pattern: {pattern!r}")
+        result.append(pattern)
+    return tuple(result)
+
+
+def excluded(relative: str, patterns: Sequence[str]) -> bool:
+    """Match basename or root-relative forward-slash path, case-insensitively."""
+    from fnmatch import fnmatchcase
+
+    path = relative.casefold()
+    name = relative.rsplit("/", 1)[-1].casefold()
+    for raw in patterns:
+        pattern = raw.casefold()
+        if (
+            fnmatchcase(path, pattern)
+            or fnmatchcase(name, pattern)
+            or (pattern.endswith("/**") and path == pattern[:-3])
+            or (pattern.endswith("/") and path == pattern.rstrip("/"))
+        ):
+            return True
+    return False
