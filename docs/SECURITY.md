@@ -9,7 +9,7 @@ FileFlow is designed to reduce **accidental local file loss**, not to be a harde
 | Same or nested roots | Reject both nesting directions after canonical resolution; reject terminal symlink roots while normalizing ancestor aliases (e.g. macOS /var) |
 | Following links | Ignore link entries and hidden folders; reject symlink-bearing destination parents |
 | Existing output gets replaced | Plan numbered destinations and open with exclusive `xb` |
-| Source removed before copy | Complete copy, fsync, metadata checks and destination SHA-256 readback before unlinking source |
+| Source removed before copy | Complete copy, fsync, compare source and destination SHA-256, and recheck metadata before unlinking source |
 | Interrupted/failed copy | Leave original; attempt to delete only this operation's newly created target |
 | Missing audit history | Persist a unique per-run manifest before the first move; update success/failure after each operation |
 | Undo overwrites original | Restore using exclusive `xb` and fail if source exists or is a symlink |

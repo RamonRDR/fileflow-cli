@@ -49,8 +49,10 @@ def _move_one(move: Move) -> str:
         if fingerprint(after) != move.fingerprint or not stat.S_ISREG(after.st_mode):
             raise RuntimeError("Source changed during copying")
         shutil.copystat(move.source, target, follow_symlinks=False)
-        # Read back the copied data while the original still exists.
+        # Verify the destination matches the original before removing its pathname.
         digest = sha256_file(target)
+        if sha256_file(move.source) != digest:
+            raise RuntimeError("Copied destination content differs from source")
         # Re-check before removing the source. A failed unlink leaves the original.
         latest = move.source.lstat()
         if fingerprint(latest) != move.fingerprint or not stat.S_ISREG(latest.st_mode):

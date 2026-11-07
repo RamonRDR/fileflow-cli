@@ -6,7 +6,7 @@
 
 ## ADR 0002: Verify before unlinking
 
-A plain rename could replace an existing file or fail across volumes. The executor uses exclusive target creation (`xb`), reads back the copied contents for a SHA-256 digest, and checks source identity before unlinking. This favors safety over raw speed; it is not an atomic transaction.
+A plain rename could replace an existing file or fail across volumes. The executor uses exclusive target creation (`xb`), reads back and compares SHA-256 digests for the source and copied destination, and checks source identity before unlinking. This favors safety over raw speed; it is not an atomic transaction.
 
 ## ADR 0003: Versioned YAML without Pydantic
 
