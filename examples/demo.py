@@ -59,9 +59,7 @@ def main() -> None:
 
         print("=== UNDO ===", flush=True)
         run("undo", manifests[0])
-        assert (source / "nested" / "report.pdf").read_text(
-            encoding="utf-8"
-        ) == "new research"
+        assert (source / "nested" / "report.pdf").read_text(encoding="utf-8") == "new research"
         assert (source / "photo.PNG").exists()
         assert (source / "temporary.tmp").exists()
         assert prior.read_text(encoding="utf-8") == "existing document"
