@@ -107,7 +107,7 @@ Se rechazan claves desconocidas, valores del tipo incorrecto, extensiones y patr
 ## Seguridad y undo
 
 1. **Planificación sin cambios:** la simulación no escribe archivos ni crea un manifiesto.
-2. **Rutas separadas:** se rechazan directorios iguales o superpuestos y se omiten enlaces simbólicos y elementos ocultos.
+2. **Rutas separadas:** se rechazan directorios iguales o superpuestos y enlaces elegidos directamente como raíz; los alias de directorios ancestrales (como /var en macOS) se normalizan, y se omiten enlaces encontrados durante el análisis y elementos ocultos.
 3. **Sin reemplazos silenciosos:** se añaden sufijos a los conflictos planificados y se crean destinos exclusivamente (`xb`).
 4. **Copiar antes de borrar el nombre original:** la copia se sincroniza, se calcula su SHA-256 y se revisan metadatos antes de retirar el origen.
 5. **Registro previo:** el manifiesto existe antes de la primera copia y se actualiza tras cada resultado.

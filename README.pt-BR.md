@@ -107,7 +107,7 @@ O esquema rejeita chaves desconhecidas, tipos incorretos, extensões e padrões 
 ## Segurança e undo
 
 1. **Planejamento sem escrita:** o dry-run não grava arquivos nem cria manifestos.
-2. **Diretórios separados:** origem e destino iguais ou aninhados são recusados; links simbólicos e itens ocultos são ignorados.
+2. **Diretórios separados:** origem e destino iguais ou aninhados são recusados; links usados diretamente como raiz são bloqueados, aliases de ancestrais (como /var no macOS) são normalizados, e links encontrados na varredura e itens ocultos são ignorados.
 3. **Sem sobrescrita silenciosa:** colisões planejadas recebem sufixos, e a gravação exclusiva `xb` impede substituir arquivos existentes.
 4. **Copiar antes de remover:** a cópia é sincronizada e lida para cálculo de SHA-256 antes de remover o caminho original, com nova verificação de metadados.
 5. **Registro antecipado:** o manifesto é criado antes da primeira movimentação e atualizado após cada operação.

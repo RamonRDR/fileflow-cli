@@ -113,7 +113,7 @@ The schema is strict: unknown keys, invalid extension strings, malformed pattern
 ## Safety and undo
 
 1. **Read-only plan:** Dry-run only inspects paths and displays the plan; it never writes files or manifests.
-2. **Non-overlapping roots:** The source and destination must be different, non-nested directories. Symlink-bearing input paths, hidden files and scanned symlinks are excluded.
+2. **Non-overlapping roots:** The source and destination must be different, non-nested directories. Directly selected symlink roots are rejected; ancestor aliases (such as macOS /var) resolve to canonical physical paths. Scanned links and hidden entries are ignored.
 3. **Exclusive destinations:** Plans choose numbered suffixes for existing names, and the copy uses `xb` so a late destination cannot be silently overwritten.
 4. **Copy first:** The executor copies data, flushes/synchronizes it, reads back a SHA-256 digest, rechecks source metadata and only then removes the source pathname.
 5. **Persistent journal:** A unique run manifest is written before the first copy and updated after each success or failure.

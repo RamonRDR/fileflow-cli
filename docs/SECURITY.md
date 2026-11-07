@@ -6,7 +6,7 @@ FileFlow is designed to reduce **accidental local file loss**, not to be a harde
 
 | Risk | Mitigation |
 | --- | --- |
-| Same or nested roots | Reject both directions; resolve lexical paths and reject symlinks in input components |
+| Same or nested roots | Reject both nesting directions after canonical resolution; reject terminal symlink roots while normalizing ancestor aliases (e.g. macOS /var) |
 | Following links | Ignore link entries and hidden folders; reject symlink-bearing destination parents |
 | Existing output gets replaced | Plan numbered destinations and open with exclusive `xb` |
 | Source removed before copy | Complete copy, fsync, metadata checks and destination SHA-256 readback before unlinking source |
