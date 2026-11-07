@@ -43,9 +43,7 @@ def test_single_file_glob_and_relative_path_glob(folders):
     (source / "keep" / "keep.log").write_text("move", encoding="utf-8")
     (source / "keep" / "skip.tmp").write_text("ignore", encoding="utf-8")
     (source / "skip" / "secret.log").write_text("ignore", encoding="utf-8")
-    plan = build_plan(
-        source, destination, recursive=True, exclude_patterns=("*.tmp", "skip/**")
-    )
+    plan = build_plan(source, destination, recursive=True, exclude_patterns=("*.tmp", "skip/**"))
     assert [move.source.name for move in plan.moves] == ["keep.log"]
     assert plan.ignored == 2
 
@@ -57,7 +55,7 @@ def test_recursive_never_follows_directory_symlink(folders):
     (outside / "private.txt").write_text("private", encoding="utf-8")
     try:
         (source / "shortcut").symlink_to(outside, target_is_directory=True)
-    except (OSError, NotImplementedError):
+    except OSError, NotImplementedError:
         pytest.skip("Symlinks not available")
     plan = build_plan(source, destination, recursive=True)
     assert plan.moves == ()
