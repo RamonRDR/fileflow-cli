@@ -22,8 +22,14 @@ def ensure_no_symlink_components(path: Path) -> None:
 
 def validate_roots(source: Path, destination: Path) -> tuple[Path, Path]:
     """Validate roots before any directory is created or file is copied."""
-    source = Path(os.path.abspath(os.path.expanduser(os.fspath(source))))
-    destination = Path(os.path.abspath(os.path.expanduser(os.fspath(destination))))
+    input_source = Path(os.path.abspath(os.path.expanduser(os.fspath(source))))
+    input_destination = Path(os.path.abspath(os.path.expanduser(os.fspath(destination))))
+    # Reject directly selected link roots. Ancestor aliases such as macOS /var
+    # are resolved to physical paths before planning and shown in the plan.
+    if input_source.is_symlink() or input_destination.is_symlink():
+        raise ValueError("Source and destination roots cannot be symbolic links")
+    source = input_source.resolve(strict=False)
+    destination = input_destination.resolve(strict=False)
     ensure_no_symlink_components(source)
     ensure_no_symlink_components(destination)
 

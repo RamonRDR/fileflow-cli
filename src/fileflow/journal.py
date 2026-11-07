@@ -138,7 +138,10 @@ def execute_recorded(plan: Plan, source: Path, destination: Path) -> RecordedRun
 
 
 def _read(path: Path) -> dict:
-    path = Path(os.path.abspath(os.path.expanduser(os.fspath(path))))
+    input_path = Path(os.path.abspath(os.path.expanduser(os.fspath(path))))
+    if input_path.is_symlink():
+        raise ValueError("Manifest path cannot be a symbolic link")
+    path = input_path.resolve(strict=False)
     ensure_no_symlink_components(path)
     if not path.is_file() or path.stat().st_size > 10_000_000:
         raise ValueError(f"Missing, invalid, or oversized manifest: {path}")
@@ -243,7 +246,7 @@ def undo_manifest(path: Path, *, dry_run: bool = False) -> UndoReport:
     moving may require manual reconciliation to avoid deleting unrelated files.
     """
     state = _read(path)
-    manifest = Path(os.path.abspath(os.path.expanduser(os.fspath(path))))
+    manifest = Path(os.path.abspath(os.path.expanduser(os.fspath(path)))).resolve(strict=False)
     count = 0
     undone = 0
     skipped = 0
