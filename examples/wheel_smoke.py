@@ -2,7 +2,6 @@
 
 import os
 import subprocess
-import sys
 import venv
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -19,8 +18,15 @@ def main() -> None:
         venv.create(root, with_pip=True, system_site_packages=True)
         python = root / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
         subprocess.run(
-            [str(python), "-m", "pip", "install", "--no-index", "--no-deps",
-             str(wheels[0].resolve())],
+            [
+                str(python),
+                "-m",
+                "pip",
+                "install",
+                "--no-index",
+                "--no-deps",
+                str(wheels[0].resolve()),
+            ],
             check=True,
         )
         subprocess.run(
