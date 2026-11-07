@@ -1,5 +1,6 @@
 """File operations with exclusive destination creation and rollback on failure."""
 
+import hashlib
 import os
 import shutil
 import stat
@@ -9,7 +10,13 @@ from fileflow.models import Move, MoveFailure, Plan, Result
 from fileflow.planner import ensure_no_symlink_components, fingerprint
 
 
-def _move_one(move: Move) -> None:
+def sha256_file(path):
+    """Compute a file digest without loading it entirely into memory."""
+    digest = hashlib.file_digest(path.open("rb"), "sha256")
+    return digest.hexdigest()
+
+
+def _move_one(move: Move) -> str:
     """Copy first, verify source, then unlink. Never replace an existing target.
 
     Exclusive 'xb' protects against target creation between planning and execution.
@@ -41,11 +48,14 @@ def _move_one(move: Move) -> None:
         if fingerprint(after) != move.fingerprint or not stat.S_ISREG(after.st_mode):
             raise RuntimeError("Source changed during copying")
         shutil.copystat(move.source, target, follow_symlinks=False)
+        # Read back the copied data while the original still exists.
+        digest = sha256_file(target)
         # Re-check before removing the source. A failed unlink leaves the original.
         latest = move.source.lstat()
         if fingerprint(latest) != move.fingerprint or not stat.S_ISREG(latest.st_mode):
             raise RuntimeError("Source changed before removal")
         move.source.unlink()
+        return digest
     except Exception:
         if created:
             # Preserve the original error, even if cleanup is denied.
