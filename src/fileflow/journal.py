@@ -11,6 +11,7 @@ import re
 import shutil
 import stat
 import tempfile
+from contextlib import suppress
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -175,6 +176,7 @@ def _read(path: Path) -> dict:
         if (
             not isinstance(src, str)
             or not isinstance(dst, str)
+            or not isinstance(status, str)
             or status not in STATES
             or type(size) is not int
             or size < 0
@@ -184,6 +186,8 @@ def _read(path: Path) -> dict:
         if (
             not src_path.is_absolute()
             or not dst_path.is_absolute()
+            or Path(os.path.abspath(src)) != src_path
+            or Path(os.path.abspath(dst)) != dst_path
             or src_path == source_root
             or dst_path == destination_root
             or source_root not in src_path.parents
@@ -226,10 +230,9 @@ def _undo_one(source: Path, destination: Path, checksum: str, size: int) -> None
         destination.unlink()
     except Exception:
         if created:
-            try:
+            # Never mask the first error; a partial copy may need attention.
+            with suppress(OSError):
                 source.unlink(missing_ok=True)
-            except OSError:
-                pass  # Never mask the first error; the partial copy needs attention.
         raise
 
 

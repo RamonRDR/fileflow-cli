@@ -5,15 +5,16 @@ import os
 import shutil
 import stat
 from contextlib import suppress
+from pathlib import Path
 
 from fileflow.models import Move, MoveFailure, Plan, Result
 from fileflow.planner import ensure_no_symlink_components, fingerprint
 
 
-def sha256_file(path):
+def sha256_file(path: Path) -> str:
     """Compute a file digest without loading it entirely into memory."""
-    digest = hashlib.file_digest(path.open("rb"), "sha256")
-    return digest.hexdigest()
+    with path.open("rb") as handle:
+        return hashlib.file_digest(handle, "sha256").hexdigest()
 
 
 def _move_one(move: Move) -> str:
