@@ -99,7 +99,7 @@ def build_plan(
     categories = parse_categories(category_rules)
     patterns = validate_exclusions(exclude_patterns)
     if category_rules and mode is not SortMode.category:
-        raise ValueError("--category or YAML categories require --mode category")
+        raise ValueError("--category or YAML categories requires --mode category")
 
     planned: list[Move] = []
     taken: set[str] = set()
