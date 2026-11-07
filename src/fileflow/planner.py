@@ -27,7 +27,7 @@ def validate_roots(source: Path, destination: Path) -> tuple[Path, Path]:
     # Reject directly selected link roots. Ancestor aliases such as macOS /var
     # are resolved to physical paths before planning and shown in the plan.
     if input_source.is_symlink() or input_destination.is_symlink():
-        raise ValueError("Source and destination roots cannot be symbolic links")
+        raise ValueError("Symbolic links are not accepted as source or destination roots")
     source = input_source.resolve(strict=False)
     destination = input_destination.resolve(strict=False)
     ensure_no_symlink_components(source)
