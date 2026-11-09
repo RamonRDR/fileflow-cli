@@ -220,7 +220,6 @@ def test_undo_refuses_symlink_original(folders):
     assert (destination / "txt" / "report.txt").exists()
 
 
-
 def test_undo_recreates_deleted_source_root_without_mutating_dry_run(folders):
     source, destination = folders
     record = _record(folders)
