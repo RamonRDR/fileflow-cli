@@ -285,7 +285,7 @@ def test_oversized_batch_cli_returns_input_error(folders, monkeypatch):
 
     result = runner.invoke(app, ["organize", str(source), "-d", str(destination)])
     assert result.exit_code == 2
-    assert "split the files" in result.output
+    assert "split the files" in " ".join(result.output.split())
     assert (source / "important.txt").exists()
     assert not destination.exists()
 
