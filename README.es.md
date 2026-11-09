@@ -114,8 +114,8 @@ Se rechazan claves desconocidas, valores del tipo incorrecto, extensiones y patr
 2. **Rutas separadas:** se rechazan directorios iguales o superpuestos y enlaces elegidos directamente como raíz; los alias de directorios ancestrales (como /var en macOS) se normalizan, y se omiten enlaces encontrados durante el análisis y elementos ocultos.
 3. **Sin reemplazos silenciosos:** se añaden sufijos a los conflictos planificados y se crean destinos exclusivamente (`xb`).
 4. **Copiar antes de borrar el nombre original:** la copia se sincroniza, se comparan los SHA-256 de origen y destino y se revisan metadatos antes de retirar el origen.
-5. **Registro previo:** el manifiesto existe antes de la primera copia y se actualiza tras cada resultado.
-6. **Reversión protegida:** se comprueba el tamaño y hash del destino y se rechaza cualquier ruta de origen que ya exista.
+5. **Registro previo:** el manifiesto existe antes de la primera copia y se actualiza tras cada resultado. Los lotes que podrían superar el límite de 10 MB se rechazan antes de mover archivos; divídalos en lotes menores.
+6. **Reversión protegida:** se comprueba el tamaño y hash del destino y se rechaza cualquier ruta de origen que ya exista. Si se eliminó la carpeta original después de organizar, puede recrearse de forma segura al deshacer.
 
 No hay comando para eliminación permanente. Aun así, un movimiento retira el nombre original después de copiar, y una reversión retira el nombre de destino después de restaurar. Haga copias de seguridad de archivos importantes.
 

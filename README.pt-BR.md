@@ -114,8 +114,8 @@ O esquema rejeita chaves desconhecidas, tipos incorretos, extensões e padrões 
 2. **Diretórios separados:** origem e destino iguais ou aninhados são recusados; links usados diretamente como raiz são bloqueados, aliases de ancestrais (como /var no macOS) são normalizados, e links encontrados na varredura e itens ocultos são ignorados.
 3. **Sem sobrescrita silenciosa:** colisões planejadas recebem sufixos, e a gravação exclusiva `xb` impede substituir arquivos existentes.
 4. **Copiar antes de remover:** a cópia é sincronizada e seu SHA-256 é comparado com o da origem antes de remover o caminho original, com nova verificação de metadados.
-5. **Registro antecipado:** o manifesto é criado antes da primeira movimentação e atualizado após cada operação.
-6. **Desfazer protegido:** somente movimentações registradas podem ser restauradas; se a origem já tiver arquivo ou o destino tiver mudado, a operação é recusada.
+5. **Registro antecipado:** o manifesto é criado antes da primeira movimentação e atualizado após cada operação. Lotes que poderiam ultrapassar o limite de 10 MB são recusados antes de movimentar arquivos; divida-os em lotes menores.
+6. **Desfazer protegido:** somente movimentações registradas podem ser restauradas; se a origem já tiver arquivo ou o destino tiver mudado, a operação é recusada. Uma pasta de origem removida após a organização pode ser recriada durante a restauração.
 
 Não existe comando para exclusão permanente. Mesmo assim, o nome original é removido após a cópia e o nome de destino é removido após a reversão. Faça backup de arquivos importantes antes de executar.
 

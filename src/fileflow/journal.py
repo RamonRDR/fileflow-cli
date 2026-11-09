@@ -22,6 +22,8 @@ from fileflow.models import Move, MoveFailure, Plan, Result
 from fileflow.planner import ensure_no_symlink_components, fingerprint, validate_roots
 
 SCHEMA_VERSION = 1
+MAX_MANIFEST_BYTES = 10_000_000
+MAX_ERROR_BYTES = 256
 DIGEST = re.compile(r"[0-9a-f]{64}\Z")
 STATES = {"planned", "moved", "failed", "undone"}
 
@@ -47,6 +49,43 @@ class UndoReport:
 
 def _timestamp() -> str:
     return datetime.now(UTC).isoformat()
+
+
+def _compact_error(error: str) -> str:
+    """Bound journal error messages to avoid unexpected manifest growth."""
+    return error.encode("utf-8", errors="replace")[:MAX_ERROR_BYTES].decode(
+        "utf-8", errors="ignore"
+    )
+
+
+def _preflight_manifest_size(state: dict) -> None:
+    """Reject oversized batches before creating a manifest or moving a source.
+
+    Reserve the worst possible serialized growth per operation: successful
+    moves may add a checksum and two timestamps, while failed operations may
+    store an error. JSON can escape a single error byte as six ASCII characters.
+    """
+    timestamp = "9999-12-31T23:59:59.999999+00:00"
+    worst_case = {
+        **state,
+        "operations": [
+            {
+                **entry,
+                "status": "undone",
+                "sha256": "0" * 64,
+                "moved_at": timestamp,
+                "undone_at": timestamp,
+                "error": "x" * (6 * MAX_ERROR_BYTES),
+            }
+            for entry in state["operations"]
+        ],
+    }
+    estimated_bytes = len(json.dumps(worst_case, ensure_ascii=False, indent=2).encode("utf-8")) + 1
+    if estimated_bytes > MAX_MANIFEST_BYTES:
+        raise ValueError(
+            "Batch exceeds the 10 MB operation manifest limit; split the files "
+            "into smaller batches. No files have been moved."
+        )
 
 
 def _dump(path: Path, data: dict, *, create: bool = False) -> None:
@@ -91,11 +130,6 @@ def execute_recorded(plan: Plan, source: Path, destination: Path) -> RecordedRun
     if not plan.moves:
         return RecordedRun(Result((), (), plan.ignored), None)
 
-    folder = destination_root / ".fileflow" / "manifests"
-    ensure_no_symlink_components(folder)
-    folder.mkdir(parents=True, exist_ok=True)
-    ensure_no_symlink_components(folder)
-    manifest = folder / f"{uuid4().hex}.json"
     state: dict = {
         "version": SCHEMA_VERSION,
         "created_at": _timestamp(),
@@ -112,6 +146,12 @@ def execute_recorded(plan: Plan, source: Path, destination: Path) -> RecordedRun
             for move in plan.moves
         ],
     }
+    _preflight_manifest_size(state)
+    folder = destination_root / ".fileflow" / "manifests"
+    ensure_no_symlink_components(folder)
+    folder.mkdir(parents=True, exist_ok=True)
+    ensure_no_symlink_components(folder)
+    manifest = folder / f"{uuid4().hex}.json"
     _dump(manifest, state, create=True)
 
     moved: list[Move] = []
@@ -120,9 +160,10 @@ def execute_recorded(plan: Plan, source: Path, destination: Path) -> RecordedRun
         try:
             digest = _move_one(move)
         except (OSError, RuntimeError, ValueError) as exc:
+            reason = _compact_error(str(exc))
             entry["status"] = "failed"
-            entry["error"] = str(exc)
-            failed.append(MoveFailure(move, str(exc)))
+            entry["error"] = reason
+            failed.append(MoveFailure(move, reason))
         else:
             entry["status"] = "moved"
             entry["sha256"] = digest
@@ -143,7 +184,7 @@ def _read(path: Path) -> dict:
         raise ValueError("Manifest path cannot be a symbolic link")
     path = input_path.resolve(strict=False)
     ensure_no_symlink_components(path)
-    if not path.is_file() or path.stat().st_size > 10_000_000:
+    if not path.is_file() or path.stat().st_size > MAX_MANIFEST_BYTES:
         raise ValueError(f"Missing, invalid, or oversized manifest: {path}")
     try:
         state = json.loads(path.read_text(encoding="utf-8"))
@@ -161,7 +202,11 @@ def _read(path: Path) -> dict:
     destination_root = Path(state["destination_root"])
     if not source_root.is_absolute() or not destination_root.is_absolute():
         raise ValueError("Manifest must store absolute root paths")
-    source_root, destination_root = validate_roots(source_root, destination_root)
+    checked_source, checked_destination = validate_roots(
+        source_root, destination_root, require_source=False
+    )
+    if checked_source != source_root or checked_destination != destination_root:
+        raise ValueError("Manifest root paths changed since the original run")
     expected = destination_root / ".fileflow" / "manifests"
     if path.parent != expected or path.suffix != ".json":
         raise ValueError("Manifest must live in the destination .fileflow/manifests directory")

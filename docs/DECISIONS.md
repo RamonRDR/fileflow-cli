@@ -14,7 +14,7 @@ PyYAML `safe_load` plus small explicit validators is sufficient for this compact
 
 ## ADR 0004: JSON manifests for undo
 
-A hidden destination-side manifest stores paths, status, and SHA-256 of successful moves. Undo validates roots, destinations, hashes and original path availability. Incomplete `planned` entries are not automatically reversed.
+A hidden destination-side manifest stores paths, status, and SHA-256 of successful moves. Undo validates roots, destinations, hashes and original path availability, while allowing a missing source root to be recreated. A conservative 10 MB preflight bound prevents writing a manifest that undo would subsequently refuse to read. Incomplete `planned` entries are not automatically reversed.
 
 ## ADR 0005: Stacked PRs and CI
 

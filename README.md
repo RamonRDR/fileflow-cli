@@ -120,8 +120,8 @@ The schema is strict: unknown keys, invalid extension strings, malformed pattern
 2. **Non-overlapping roots:** The source and destination must be different, non-nested directories. Directly selected symlink roots are rejected; ancestor aliases (such as macOS /var) resolve to canonical physical paths. Scanned links and hidden entries are ignored.
 3. **Exclusive destinations:** Plans choose numbered suffixes for existing names, and the copy uses `xb` so a late destination cannot be silently overwritten.
 4. **Copy first:** The executor copies data, flushes/synchronizes it, compares source and destination SHA-256 digests, rechecks source metadata and only then removes the source pathname.
-5. **Persistent journal:** A unique run manifest is written before the first copy and updated after each success or failure.
-6. **Guarded undo:** Restores only recorded successful moves, checks the destination's size and SHA-256, refuses existing original paths, and records successful reversals.
+5. **Persistent journal:** A unique run manifest is written before the first copy and updated after each success or failure. Oversized batches are rejected before moving any files, so each generated manifest remains within the 10 MB undo-reader limit.
+6. **Guarded undo:** Restores only recorded successful moves, checks the destination's size and SHA-256, refuses existing original paths, and records successful reversals. A deleted original source directory can be safely recreated.
 
 There is **no permanent-delete command**. Successful moves remove the original pathname only after copying, and successful undo removes the moved pathname only after restoration. Back up irreplaceable data and run a dry-run before touching important files.
 

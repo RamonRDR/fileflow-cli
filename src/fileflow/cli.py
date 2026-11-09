@@ -90,7 +90,10 @@ def organize(
 
     try:
         recorded = execute_recorded(plan, source, destination)
-    except (ValueError, OSError, RuntimeError) as exc:
+    except ValueError as exc:
+        console.print(f"[red]Cannot execute safely: {exc}[/red]")
+        raise typer.Exit(code=2) from exc
+    except (OSError, RuntimeError) as exc:
         console.print(f"[red]Cannot execute safely: {exc}[/red]")
         raise typer.Exit(code=1) from exc
     result = recorded.result
