@@ -1,12 +1,16 @@
-# FileFlow CLI
+<div align="center">
+
+# FileFlow CLI 📁
+
+**Organiza archivos de forma segura. Previsualiza cada movimiento. Deshaz con confianza.**
+
+[🇺🇸 English](README.md) · [🇧🇷 Português](README.pt-BR.md) · [🇪🇸 Español](README.es.md)
 
 [![CI](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
 [![Python 3.14](https://img.shields.io/badge/Python-3.14-blue)](https://www.python.org/)
 [![MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-**Organizador de archivos por consola con reglas YAML, simulación, registro persistente y reversión sin sobrescrituras.**
-
-[🇬🇧 English](README.md) · [🇧🇷 Português](README.pt-BR.md) · 🇪🇸 Español
+</div>
 
 > **Estado:** candidato funcional, pendiente de la revisión técnica final y aprobación para integrar los PR. No está publicado en PyPI. Mientras los PR sigan abiertos, instale la última rama de desarrollo, no `main`.
 

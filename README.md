@@ -1,12 +1,16 @@
-# FileFlow CLI
+<div align="center">
+
+# FileFlow CLI 📁
+
+**Organize files safely. Preview every move. Undo with confidence.**
+
+[🇺🇸 English](README.md) · [🇧🇷 Português](README.pt-BR.md) · [🇪🇸 Español](README.es.md)
 
 [![CI](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
 [![Python 3.14](https://img.shields.io/badge/Python-3.14-blue)](https://www.python.org/)
 [![MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-**A cautious, cross-platform file organizer with YAML rules, preview mode, persistent operation logs and conflict-safe undo.**
-
-🇬🇧 English · [🇧🇷 Português](README.pt-BR.md) · [🇪🇸 Español](README.es.md)
+</div>
 
 > **Release status:** feature-complete candidate, pending final review and owner-approved merges. Not published on PyPI. While the pull-request stack is open, install the latest feature branch rather than `main`.
 
