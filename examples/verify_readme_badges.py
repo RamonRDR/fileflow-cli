@@ -59,9 +59,8 @@ def passed_from_junit(report: Path) -> tuple[int, int, int, int, int]:
 
 
 def check_readmes(passed: int) -> None:
-    package_version = tomllib.loads(
-        (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    )["project"]["version"]
+    project_manifest = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    package_version = tomllib.loads(project_manifest)["project"]["version"]
     headers = []
     for name in READMES:
         path = ROOT / name
