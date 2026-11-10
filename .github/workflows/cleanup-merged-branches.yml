@@ -40,3 +40,17 @@ jobs:
           feat/cycle-2-operation-journal-and-undo|0d2cb44e73c59d32004ea28c46bb1ae6ce353c76|3
           docs/cycle-3-release-readiness|c001a0839cfe852d99eedbf8cff374686e039e81|4
           MERGED_BRANCHES
+          
+          # The maintenance PR branch must also be merged and match main exactly.
+          # This also avoids leaving an extra temporary branch after cleanup.
+          cleanup_branch="chore/fileflow-release-cleanup"
+          cleanup_sha="$(gh api "repos/$GH_REPO/git/ref/heads/$cleanup_branch" --jq ".object.sha")"
+          main_sha="$(gh api "repos/$GH_REPO/branches/main" --jq ".commit.sha")"
+          cleanup_tree="$(gh api "repos/$GH_REPO/git/commits/$cleanup_sha" --jq ".tree.sha")"
+          main_tree="$(gh api "repos/$GH_REPO/git/commits/$main_sha" --jq ".tree.sha")"
+          if [[ "$cleanup_tree" != "$main_tree" ]]; then
+            echo "::error::Maintenance branch differs from main; refuse deletion"
+            exit 1
+          fi
+          gh api --method DELETE "repos/$GH_REPO/git/refs/heads/$cleanup_branch" > /dev/null
+          echo "Deleted verified maintenance branch: $cleanup_branch"
