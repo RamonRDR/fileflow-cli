@@ -218,3 +218,99 @@ def test_undo_refuses_symlink_original(folders):
     assert len(result.conflicts) == 1
     assert outside.read_text(encoding="utf-8") == "untouched"
     assert (destination / "txt" / "report.txt").exists()
+
+
+def test_undo_recreates_deleted_source_root_without_mutating_dry_run(folders):
+    source, destination = folders
+    record = _record(folders)
+    source.rmdir()
+    assert not source.exists()
+
+    preview = undo_manifest(record.manifest, dry_run=True)
+    assert preview.planned == 1
+    assert preview.undone == 0
+    assert not preview.conflicts
+    assert not source.exists()
+
+    restored = undo_manifest(record.manifest)
+    assert restored.undone == 1
+    assert not restored.conflicts
+    assert (source / "report.txt").read_text(encoding="utf-8") == "original content"
+    assert not (destination / "txt" / "report.txt").exists()
+
+
+def test_undo_rejects_replaced_source_root_file(folders):
+    source, destination = folders
+    record = _record(folders)
+    source.rmdir()
+    source.write_text("not a folder", encoding="utf-8")
+    with pytest.raises(ValueError, match="not a directory"):
+        undo_manifest(record.manifest)
+    assert source.read_text(encoding="utf-8") == "not a folder"
+    assert (destination / "txt" / "report.txt").exists()
+
+
+def test_undo_rejects_symlink_replacing_source_root(folders):
+    source, destination = folders
+    record = _record(folders)
+    source.rmdir()
+    external = source.parent / "external"
+    external.mkdir()
+    try:
+        source.symlink_to(external, target_is_directory=True)
+    except OSError, NotImplementedError:
+        pytest.skip("Directory symlinks not available")
+    with pytest.raises(ValueError, match="Symbolic links"):
+        undo_manifest(record.manifest)
+    assert not (external / "report.txt").exists()
+    assert (destination / "txt" / "report.txt").exists()
+
+
+def test_oversized_batch_rejected_before_files_are_moved(folders, monkeypatch):
+    source, destination = folders
+    original = source / "important.txt"
+    original.write_text("keep", encoding="utf-8")
+    monkeypatch.setattr("fileflow.journal.MAX_MANIFEST_BYTES", 1000)
+
+    with pytest.raises(ValueError, match="split the files"):
+        execute_recorded(build_plan(source, destination), source, destination)
+    assert original.read_text(encoding="utf-8") == "keep"
+    assert not destination.exists()
+
+
+def test_oversized_batch_cli_returns_input_error(folders, monkeypatch):
+    source, destination = folders
+    (source / "important.txt").write_text("keep", encoding="utf-8")
+    monkeypatch.setattr("fileflow.journal.MAX_MANIFEST_BYTES", 1000)
+
+    result = runner.invoke(app, ["organize", str(source), "-d", str(destination)])
+    assert result.exit_code == 2
+    assert "split the files" in " ".join(result.output.split())
+    assert (source / "important.txt").exists()
+    assert not destination.exists()
+
+
+def test_bounded_error_keeps_written_manifest_readable(folders, monkeypatch):
+    source, destination = folders
+    (source / "a.txt").write_text("first", encoding="utf-8")
+    (source / "b.txt").write_text("second", encoding="utf-8")
+    monkeypatch.setattr("fileflow.journal.MAX_MANIFEST_BYTES", 5000)
+    original_move = __import__("fileflow.journal", fromlist=["_move_one"])._move_one
+
+    def long_failure(move):
+        if move.source.name == "a.txt":
+            raise RuntimeError("🧪" * 5000)
+        return original_move(move)
+
+    monkeypatch.setattr("fileflow.journal._move_one", long_failure)
+    recorded = execute_recorded(build_plan(source, destination), source, destination)
+    assert len(recorded.result.failed) == 1
+    assert len(recorded.result.moved) == 1
+    assert recorded.manifest.stat().st_size <= 5000
+    status = json.loads(recorded.manifest.read_text(encoding="utf-8"))
+    assert status["operations"][0]["status"] == "failed"
+    assert len(status["operations"][0]["error"].encode("utf-8")) <= 256
+    preview = undo_manifest(recorded.manifest, dry_run=True)
+    assert preview.planned == 1
+    assert not preview.conflicts
+    assert (source / "a.txt").exists()

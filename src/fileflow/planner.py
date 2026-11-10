@@ -20,19 +20,30 @@ def ensure_no_symlink_components(path: Path) -> None:
         raise ValueError(f"Symbolic links in paths are not supported: {path}")
 
 
-def validate_roots(source: Path, destination: Path) -> tuple[Path, Path]:
-    """Validate roots before any directory is created or file is copied."""
-    source = Path(os.path.abspath(os.path.expanduser(os.fspath(source))))
-    destination = Path(os.path.abspath(os.path.expanduser(os.fspath(destination))))
+def validate_roots(
+    source: Path, destination: Path, *, require_source: bool = True
+) -> tuple[Path, Path]:
+    """Validate non-overlapping roots; undo may restore a missing source directory."""
+    input_source = Path(os.path.abspath(os.path.expanduser(os.fspath(source))))
+    input_destination = Path(os.path.abspath(os.path.expanduser(os.fspath(destination))))
+    # Reject directly selected link roots. Ancestor aliases such as macOS /var
+    # are resolved to physical paths before planning and shown in the plan.
+    if input_source.is_symlink() or input_destination.is_symlink():
+        raise ValueError("Symbolic links are not accepted as source or destination roots")
+    source = input_source.resolve(strict=False)
+    destination = input_destination.resolve(strict=False)
     ensure_no_symlink_components(source)
     ensure_no_symlink_components(destination)
 
-    if not source.is_dir():
+    source_exists = source.exists()
+    if source_exists and not source.is_dir():
+        raise ValueError(f"Source is not a directory: {source}")
+    if require_source and not source_exists:
         raise ValueError(f"Source directory does not exist: {source}")
     if destination.exists() and not destination.is_dir():
         raise ValueError(f"Destination is not a directory: {destination}")
 
-    actual_source = source.resolve(strict=True)
+    actual_source = source.resolve(strict=source_exists)
     actual_destination = destination.resolve(strict=False)
     if (
         actual_source == actual_destination
@@ -41,7 +52,7 @@ def validate_roots(source: Path, destination: Path) -> tuple[Path, Path]:
     ):
         raise ValueError("Source and destination must be separate, non-overlapping directories")
 
-    if not os.access(source, os.R_OK | os.X_OK):
+    if source_exists and not os.access(source, os.R_OK | os.X_OK):
         raise ValueError(f"Source directory cannot be read: {source}")
 
     writable_parent = destination

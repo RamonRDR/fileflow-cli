@@ -1,66 +1,148 @@
-# FileFlow CLI
+<div align="center">
+
+# FileFlow CLI 📁
+
+**Organize arquivos com segurança. Simule cada movimentação. Desfaça com confiança.**
+
+[🇺🇸 English](README.md) · [🇧🇷 Português](README.pt-BR.md) · [🇪🇸 Español](README.es.md)
 
 [![CI](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
+[![Python 3.14](https://img.shields.io/badge/Python-3.14-blue)](https://www.python.org/)
+[![MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-**Organizador de arquivos via terminal, com foco em segurança e compatibilidade com Windows, Linux e macOS.**
+</div>
 
-Idiomas: [English](README.md) | **Português (Brasil)** | [Español](README.es.md)
+> **Estado:** candidato funcional aguardando revisão técnica final e autorização para integrar os PRs. Nenhuma publicação no PyPI foi realizada. Enquanto os PRs estiverem abertos, instale a branch final de desenvolvimento, não a `main`.
 
-> **Estado: MVP do Ciclo 1 em revisão.** Configuração YAML, execução recursiva, exclusões, manifesto e desfazer (`undo`) pertencem ao Ciclo 2 e ainda não estão disponíveis. O pacote não está publicado no PyPI.
+## Objetivo e funcionalidades
 
-## Funcionalidades
+O FileFlow é uma automação multiplataforma em Python, criada para uso real e demonstração de boas práticas de desenvolvimento.
 
-Organização por extensão ou categorias padrão (Documents, Images, Videos, Archives, Audio e Other); categorias personalizadas com `--category`; agrupamento opcional por mês e ano da modificação em UTC; escolha independente da origem e do destino; prévia com `--dry-run`; nomes duplicados com sufixos numerados; bloqueio de sobrescrita. Arquivos ocultos, subpastas e links simbólicos são ignorados no MVP.
+- Organizar por **extensão** (incluindo `tar.gz` e `no-extension`) ou **categoria** (Documents, Images, Videos, Archives, Audio e Other).
+- Personalizar categorias com flags repetíveis ou arquivo **YAML** versionado.
+- Organizar opcionalmente por ano/mês de modificação em **UTC**.
+- Escolher diretórios independentes de origem e destino.
+- Percorrer subpastas com `--recursive` sem seguir links simbólicos.
+- Excluir arquivos e pastas com padrões glob, sem distinção entre maiúsculas e minúsculas.
+- Visualizar o plano com `--dry-run` sem criar arquivos, diretórios ou manifestos.
+- Resolver nomes duplicados com sufixos e impedir sobrescrita mesmo diante de conflitos surgidos depois do planejamento.
+- Manter um **manifesto JSON persistente** por execução, incluindo status e SHA-256.
+- Executar `undo` verificando colisões, tamanho e conteúdo, também com dry-run.
+- Mostrar tabelas Rich, resumo de movimentações, arquivos ignorados e falhas.
 
-## Tecnologias
+## Tecnologias e instalação
 
-Python 3.14+, Typer, Rich, pathlib e biblioteca padrão. pytest para testes, Ruff para qualidade, Hatchling para empacotamento e GitHub Actions para CI. PyYAML só será adicionado quando a configuração YAML for implementada.
-
-## Instalação
+Python **3.14+**, Typer, Rich, PyYAML, pathlib e biblioteca padrão. pytest, Ruff, Hatchling e GitHub Actions compõem a camada de qualidade. Não há banco de dados, chave de API ou serviço externo.
 
 ~~~bash
 git clone https://github.com/RamonRDR/fileflow-cli.git
 cd fileflow-cli
 python -m venv .venv
-# Ative o ambiente virtual conforme seu sistema operacional.
-python -m pip install -e .
-fileflow --help
 ~~~
 
-Enquanto o PR inicial não for integrado, utilize a branch `feat/cycle-1-safe-file-organizer` para testar a implementação.
+Ative o ambiente: PowerShell `.venv\Scripts\Activate.ps1`; Linux/macOS `source .venv/bin/activate`. Depois:
 
-## Exemplos
+~~~bash
+python -m pip install -e .
+fileflow --help
+fileflow organize --help
+fileflow undo --help
+~~~
 
-Simular, sem alterar arquivos:
+Os PRs ainda não estão na `main`; selecione a branch mais recente antes de instalar a versão de desenvolvimento. O pacote **não** está publicado no PyPI. O comando `python -m fileflow` também funciona.
+
+## Exemplos de comandos
+
+Simular sem alterar nada:
 
 ~~~bash
 fileflow organize ./entrada --destination ./organizados --dry-run
 ~~~
 
-Executar por extensão ou categoria:
+Organizar por extensão, categoria ou data:
 
 ~~~bash
 fileflow organize ./entrada -d ./organizados
 fileflow organize ./entrada -d ./organizados --mode category
-fileflow organize ./entrada -d ./organizados --mode category --category "Pesquisa=.pdf,.ipynb"
 fileflow organize ./entrada -d ./organizados --by-date
 ~~~
 
-A CLI exibe as operações em uma tabela Rich e resume arquivos movidos, ignorados e falhas. Códigos de saída: `0` sucesso/simulação, `1` falhas parciais, `2` entrada inválida.
+Adicionar categoria, recursão e exclusões:
 
-## YAML e undo
+~~~bash
+fileflow organize ./entrada -d ./organizados --mode category --category "Pesquisa=.pdf,.ipynb"
+fileflow organize ./entrada -d ./organizados --recursive --exclude "*.tmp" --exclude "cache/**"
+~~~
 
-**Ainda não implementados.** No Ciclo 2, o YAML permitirá configurar categorias e exclusões; um manifesto persistente permitirá desfazer operações verificando conflitos. Não execute este MVP esperando um comando de recuperação automática.
+Usar regras YAML:
 
-## Segurança
+~~~bash
+fileflow organize ./entrada -d ./organizados --config examples/config.yaml --dry-run
+fileflow organize ./entrada -d ./organizados --config examples/config.yaml
+~~~
 
-O planejamento não grava dados. Origem e destino iguais ou sobrepostos são recusados; caminhos contendo links simbólicos são bloqueados. O destino é aberto em modo exclusivo, sem substituir arquivos existentes. Os dados são copiados e conferidos por metadados antes de excluir o arquivo original. Se uma operação falha, a origem é preservada normalmente. Faça backup dos arquivos importantes e execute `--dry-run` primeiro.
+A execução real com arquivos produz um manifesto cujo caminho é impresso no terminal, como `<destino>/.fileflow/manifests/<id>.json`. Use o **caminho verdadeiro informado pelo programa**:
+
+~~~bash
+fileflow undo "/caminho/organizados/.fileflow/manifests/<id>.json" --dry-run
+fileflow undo "/caminho/organizados/.fileflow/manifests/<id>.json"
+~~~
+
+Os caminhos acima são exemplos, não saídas inventadas.
+
+## Configuração YAML
+
+~~~yaml
+version: 1
+mode: category
+recursive: true
+by_date: false
+categories:
+  Pesquisa:
+    - .pdf
+    - .ipynb
+exclude:
+  - "*.tmp"
+  - "cache/**"
+~~~
+
+O esquema rejeita chaves desconhecidas, tipos incorretos, extensões e padrões inválidos. O PyYAML usa `safe_load`. Categorias padrão permanecem disponíveis, mas extensões atribuídas explicitamente ganham prioridade; duplicações explícitas são recusadas. `--mode` prevalece sobre o modo do YAML; `--recursive`, `--by-date`, `--category` e `--exclude` habilitam ou acrescentam regras, sem desativar valores `true` no arquivo. Os padrões consideram nomes e caminhos relativos, com `/` como separador.
+
+## Segurança e undo
+
+1. **Planejamento sem escrita:** o dry-run não grava arquivos nem cria manifestos.
+2. **Diretórios separados:** origem e destino iguais ou aninhados são recusados; links usados diretamente como raiz são bloqueados, aliases de ancestrais (como /var no macOS) são normalizados, e links encontrados na varredura e itens ocultos são ignorados.
+3. **Sem sobrescrita silenciosa:** colisões planejadas recebem sufixos, e a gravação exclusiva `xb` impede substituir arquivos existentes.
+4. **Copiar antes de remover:** a cópia é sincronizada e seu SHA-256 é comparado com o da origem antes de remover o caminho original, com nova verificação de metadados.
+5. **Registro antecipado:** o manifesto é criado antes da primeira movimentação e atualizado após cada operação. Lotes que poderiam ultrapassar o limite de 10 MB são recusados antes de movimentar arquivos; divida-os em lotes menores.
+6. **Desfazer protegido:** somente movimentações registradas podem ser restauradas; se a origem já tiver arquivo ou o destino tiver mudado, a operação é recusada. Uma pasta de origem removida após a organização pode ser recriada durante a restauração.
+
+Não existe comando para exclusão permanente. Mesmo assim, o nome original é removido após a cópia e o nome de destino é removido após a reversão. Faça backup de arquivos importantes antes de executar.
+
+**Limite importante:** copiar e remover não é uma transação atômica. Interrupções podem deixar arquivos parciais e operações `planned` no manifesto, exigindo reconciliação manual. Elas não são desfeitas automaticamente. Não há defesa completa contra alterações maliciosas simultâneas dos diretórios. Leia [Segurança e limitações](docs/SECURITY.md).
+
+Códigos de saída: `0` sucesso/simulação; `1` erro operacional ou conflito de undo; `2` entrada, configuração ou manifesto inválido.
 
 ## Arquitetura
 
-`cli.py`: interface; `models.py`: modelos imutáveis; `rules.py`: regras; `planner.py`: planejamento e validação; `executor.py`: movimentação segura; `tests/`: testes temporários e isolados.
+~~~text
+src/fileflow/
+  cli.py       Interface Typer e Rich
+  config.py    Validação YAML
+  rules.py     Categorias e exclusões
+  planner.py   Planejamento e validação de caminhos
+  models.py    Modelos imutáveis
+  executor.py  Cópia segura e verificação
+  journal.py   Registro persistente e reversão
+tests/         pytest com tmp_path
+examples/      YAML e demonstração executável
+docs/          Segurança e decisões de engenharia
+.github/workflows/ci.yml   CI multiplataforma
+~~~
 
-## Testes
+O projeto separa apresentação, regras, planejamento, execução e reversão. Consulte [Decisões técnicas](docs/DECISIONS.md).
+
+## Testes, empacotamento e demonstração real
 
 ~~~bash
 python -m pip install -e ".[dev]"
@@ -68,14 +150,16 @@ ruff check .
 ruff format --check .
 python -m pytest -q
 python -m build
+python examples/wheel_smoke.py
+python examples/demo.py
 ~~~
 
-O CI usa Python 3.14 em Ubuntu, Windows e macOS. Todos os testes que manipulam arquivos utilizam `tmp_path` do pytest, sem diretórios pessoais.
+Os testes usam apenas diretórios temporários do pytest. O demo executa a CLI real em `TemporaryDirectory`, demonstra dry-run, movimentação com nome duplicado, exclusões e undo. A saída verdadeira aparece na etapa **Demo CLI end-to-end** do [GitHub Actions](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml) em Windows, Linux e macOS. Não há capturas ou resultados inventados. O badge acompanha o estado do workflow da branch principal, não a publicação de PRs pendentes.
 
 ## Limitações conhecidas
 
-Não há recursão, exclusões, YAML, histórico ou undo neste ciclo. A ferramenta ignora arquivos ocultos e links. Movimentos por cópia e remoção não são transacionais: interrupções abruptas podem deixar arquivos parciais no destino. As verificações de permissões e alterações concorrentes são de melhor esforço; ataques com modificações maliciosas simultâneas do sistema de arquivos não estão cobertos.
+A cópia e remoção não são transacionais nem completamente resistentes a falhas de energia. Manifestos contêm caminhos absolutos, são dados locais confiáveis e não devem ser alterados. A execução recursiva agrupa os arquivos por categoria/extensão, sem reconstruir a hierarquia original. Itens ocultos, links simbólicos e arquivos especiais são ignorados; subpastas vazias permanecem. Datas usam UTC. Regras de nomes, permissões e operações concorrentes variam entre sistemas de arquivos. A ferramenta não substitui um sistema de backup.
 
 ## Licença
 
-MIT. Consulte [LICENSE](LICENSE).
+[MIT](LICENSE). Copyright © 2026 Ramon Rodriguez.

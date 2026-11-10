@@ -41,3 +41,15 @@ jobs:
 
       - name: Build distributions
         run: python -m build
+
+      - name: Install and verify built wheel
+        run: python examples/wheel_smoke.py
+
+      - name: CLI help smoke test
+        run: |
+          python -m fileflow --help
+          fileflow organize --help
+          fileflow undo --help
+
+      - name: Demo CLI end-to-end
+        run: python examples/demo.py

@@ -110,3 +110,22 @@ def test_destination_symlink_swap_is_rejected(folders):
     assert len(result.failed) == 1
     assert (source / "message.txt").exists()
     assert not (outside / "message.txt").exists()
+
+
+def test_corrupted_copy_preserves_source_and_removes_new_target(folders, monkeypatch):
+    source, destination = folders
+    original = source / "important.txt"
+    original.write_bytes(b"good")
+    plan = build_plan(source, destination)
+
+    def corrupted_copy(reader, writer, length):
+        writer.write(b"bad!")  # Same size; metadata alone would not detect corruption.
+
+    monkeypatch.setattr("fileflow.executor.shutil.copyfileobj", corrupted_copy)
+    result = execute_plan(plan)
+
+    assert result.moved == ()
+    assert len(result.failed) == 1
+    assert "differs from source" in result.failed[0].reason
+    assert original.read_bytes() == b"good"
+    assert not plan.moves[0].destination.exists()
