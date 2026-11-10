@@ -34,7 +34,7 @@ jobs:
         run: ruff check .
 
       - name: Ruff formatting
-        run: ruff format --diff examples/verify_readme_badges.py
+        run: ruff format --check .
 
       - name: Pytest
         run: python -m pytest -q --junitxml=pytest-results.xml
