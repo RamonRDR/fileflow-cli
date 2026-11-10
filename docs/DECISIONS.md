@@ -1,4 +1,4 @@
-# Engineering decisions (development candidate)
+# Engineering decisions
 
 ## ADR 0001: Plan before execution
 
@@ -18,4 +18,4 @@ A hidden destination-side manifest stores paths, status, and SHA-256 of successf
 
 ## ADR 0005: Stacked PRs and CI
 
-PR #1: MVP; PR #2: YAML/recursion/exclusions; PR #3: manifests/undo; PR #4: documentation, demonstration and release readiness. They target their predecessor so `main` stays unchanged without explicit user approval. A single workflow runs Ruff, pytest, packaging and a real CLI demonstration on Python 3.14 across Ubuntu, Windows and macOS. Codex review happens only at the final gate.
+PR #1 (MVP), #2 (YAML/recursion/exclusions), #3 (manifests/undo) and #4 (documentation, demo and release readiness) were squash-merged sequentially into `main` following owner approval. The consolidated Codex review PR #5 was closed without merging. Codex's final review on the release candidate found no unresolved issues. GitHub Actions passed 92 tests per platform on Windows, Ubuntu and macOS, plus Ruff, package build and a real CLI demonstration.

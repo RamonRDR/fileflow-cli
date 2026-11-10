@@ -12,7 +12,7 @@
 
 </div>
 
-> **Estado:** candidato funcional, pendiente de la revisión técnica final y aprobación para integrar los PR. No está publicado en PyPI. Mientras los PR sigan abiertos, instale la última rama de desarrollo, no `main`.
+> **Estado:** desarrollo finalizado, revisión final de Codex completada y código integrado en `main`. GitHub Actions aprobado en Windows, Ubuntu y macOS (92 pruebas por plataforma). El paquete aún no se ha publicado en PyPI.
 
 ## Objetivo y funciones
 
@@ -49,7 +49,7 @@ fileflow organize --help
 fileflow undo --help
 ~~~
 
-Mientras la serie de PR esté abierta, cambie a la rama más reciente antes de instalar; `main` aún no incluye estos cambios. No existe una distribución de PyPI publicada. También puede usar `python -m fileflow`.
+La implementación completa ya está disponible en la rama predeterminada, **`main`**. No existe una distribución publicada en PyPI. También puede usar `python -m fileflow`.
 
 ## Ejemplos de comandos
 
@@ -154,7 +154,7 @@ python examples/wheel_smoke.py
 python examples/demo.py
 ~~~
 
-Las pruebas que modifican archivos usan `tmp_path` de pytest. La demostración crea directorios temporales y ejecuta los comandos reales de dry-run, organización con colisión, exclusiones y undo. Su salida auténtica aparece en **Demo CLI end-to-end** de [GitHub Actions](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml), en Ubuntu, Windows y macOS. No se inventan capturas ni métricas. El badge muestra el estado real del workflow de la rama principal y no significa que los PR pendientes estén publicados.
+Las pruebas que modifican archivos usan `tmp_path` de pytest. La demostración crea directorios temporales y ejecuta los comandos reales de dry-run, organización con colisión, exclusiones y undo. Su salida auténtica aparece en **Demo CLI end-to-end** de [GitHub Actions](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml), en Ubuntu, Windows y macOS. No se inventan capturas ni métricas. El badge muestra el estado real de GitHub Actions en la rama principal; no implica publicación en PyPI ni despliegue en producción.
 
 ## Limitaciones conocidas
 
