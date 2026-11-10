@@ -8,21 +8,26 @@
 
 [![CI](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
 [![Python 3.14](https://img.shields.io/badge/Python-3.14-blue)](https://www.python.org/)
+[![Version](https://img.shields.io/badge/version-0.1.0-555555)](pyproject.toml)
+[![MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 [![Typer](https://img.shields.io/badge/Typer-CLI-7c3aed)](https://typer.tiangolo.com/)
 [![Rich](https://img.shields.io/badge/Rich-terminal-f59e0b)](https://github.com/Textualize/rich)
 [![PyYAML](https://img.shields.io/badge/PyYAML-config-ef4444)](https://pyyaml.org/)
+[![Hatchling](https://img.shields.io/badge/Hatchling-build%20backend-4b5563)](pyproject.toml)
 
-[![pytest](https://img.shields.io/badge/pytest-92%20tests%2Fplatform-0ea5e9)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
+[![pytest](https://img.shields.io/badge/pytest-92%20passing-0ea5e9)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
 [![Ruff](https://img.shields.io/badge/Ruff-lint%20%2B%20format-111827)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
 [![Build](https://img.shields.io/badge/build-wheel%20verified-2563eb)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
 [![CLI smoke](https://img.shields.io/badge/CLI-smoke%20tested-14b8a6)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
-[![MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![E2E demo](https://img.shields.io/badge/E2E%20demo-verified-0f766e)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
+[![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Linux%20%7C%20macOS-blue)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
 
 </div>
 
 > **Estado:** desarrollo finalizado, revisión final de Codex completada y código integrado en `main`. GitHub Actions aprobado en Windows, Ubuntu y macOS (92 pruebas por plataforma). El paquete aún no se ha publicado en PyPI.
 
-## Objetivo y funciones
+## Funcionalidades
 
 FileFlow es una herramienta de automatización real en Python y un ejemplo de diseño modular, seguridad explícita y calidad multiplataforma.
 
@@ -38,9 +43,13 @@ FileFlow es una herramienta de automatización real en Python y un ejemplo de di
 - Ejecutar `undo` con comprobación de integridad y conflictos, también con dry-run.
 - Mostrar tablas Rich, totales de archivos movidos/omitidos y errores.
 
-## Tecnologías e instalación
+## Stack tecnológica
 
-Python **3.14+**, Typer, Rich, PyYAML, pathlib y biblioteca estándar. pytest, Ruff, Hatchling y GitHub Actions aportan pruebas, calidad y distribución. No se necesita base de datos, cuenta externa ni credenciales.
+Python **3.14+**, Typer, Rich, PyYAML, pathlib y biblioteca estándar. pytest, Ruff, Hatchling y GitHub Actions aportan pruebas, calidad y distribución. No se necesita base de datos, cuenta externa ni credenciales. La versión del código declarada en `pyproject.toml` es **0.1.0**, sin publicación en PyPI.
+
+## Instalación
+
+Clone la versión actual de `main`:
 
 ~~~bash
 git clone https://github.com/RamonRDR/fileflow-cli.git
@@ -59,7 +68,7 @@ fileflow undo --help
 
 La implementación completa ya está disponible en la rama predeterminada, **`main`**. No existe una distribución publicada en PyPI. También puede usar `python -m fileflow`.
 
-## Ejemplos de comandos
+## Inicio rápido
 
 Simular sin modificar datos:
 
@@ -131,7 +140,7 @@ No hay comando para eliminación permanente. Aun así, un movimiento retira el n
 
 Códigos de salida: `0` éxito/simulación; `1` fallos o conflictos; `2` configuración, rutas o manifiesto inválidos.
 
-## Arquitectura
+## Arquitectura del proyecto
 
 ~~~text
 src/fileflow/
@@ -142,6 +151,7 @@ src/fileflow/
   models.py    Modelos inmutables
   executor.py  Copia verificada
   journal.py   Manifiestos y reversión
+  __main__.py  Ejecución con python -m fileflow
 tests/         pytest con tmp_path
 examples/      YAML y demostración real
 docs/          Seguridad y decisiones
@@ -150,7 +160,7 @@ docs/          Seguridad y decisiones
 
 Separar interfaz, reglas, planificación, ejecución y reversión permite pruebas aisladas. Lea las [decisiones técnicas](docs/DECISIONS.md).
 
-## Pruebas y demostración real
+## Pruebas, empaquetado y demostración real
 
 ~~~bash
 python -m pip install -e ".[dev]"
@@ -164,9 +174,17 @@ python examples/demo.py
 
 Las pruebas que modifican archivos usan `tmp_path` de pytest. La demostración crea directorios temporales y ejecuta los comandos reales de dry-run, organización con colisión, exclusiones y undo. Su salida auténtica aparece en **Demo CLI end-to-end** de [GitHub Actions](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml), en Ubuntu, Windows y macOS. No se inventan capturas ni métricas. El badge muestra el estado real de GitHub Actions en la rama principal; no implica publicación en PyPI ni despliegue en producción.
 
+**Mantenimiento de insignias:** el badge de pytest registra **92 pruebas aprobadas por plataforma**, según la [ejecución #42732136463 de GitHub Actions](https://github.com/RamonRDR/fileflow-cli/actions/runs/42732136463). CI genera JUnit XML y comprueba la cantidad en los tres idiomas. Cuando cambien las pruebas, actualice todas las insignias en el mismo PR. Consulte el [inventario de insignias](docs/BADGES.md).
+
 ## Limitaciones conocidas
 
-La copia y eliminación no son transaccionales ni completamente resistentes a cortes de energía. Los manifiestos incluyen rutas absolutas, son datos locales de confianza y no deben editarse. La recursión agrupa archivos por categoría/extensión sin conservar carpetas originales. Se ignoran elementos ocultos, enlaces y archivos especiales; las carpetas vacías permanecen. Se utiliza UTC. El manejo de permisos y nombres depende del sistema de archivos. La herramienta no sustituye un sistema de copias de seguridad.
+- Copiar y retirar el archivo original no es una transacción atómica; un fallo repentino puede dejar copias parciales o registros desactualizados.
+- No existe protección completa frente a sustituciones maliciosas de carpetas, organizadores concurrentes o todas las particularidades de sistemas de archivos en red.
+- Confíe únicamente en los manifiestos locales creados por usted: incluyen rutas absolutas y no deben modificarse ni compartirse sin precaución.
+- El modo recursivo agrupa archivos por categoría/extensión **sin conservar la jerarquía** original; las carpetas vacías permanecen.
+- Se ignoran archivos ocultos, enlaces simbólicos y archivos especiales. Las fechas se agrupan usando UTC.
+- Las reglas de nombres, colisiones y permisos dependen del sistema operativo y del sistema de archivos.
+- Esta herramienta automatiza archivos locales; no sustituye un sistema empresarial de copias de seguridad.
 
 ## Licencia
 

@@ -8,15 +8,20 @@
 
 [![CI](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
 [![Python 3.14](https://img.shields.io/badge/Python-3.14-blue)](https://www.python.org/)
+[![Version](https://img.shields.io/badge/version-0.1.0-555555)](pyproject.toml)
+[![MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 [![Typer](https://img.shields.io/badge/Typer-CLI-7c3aed)](https://typer.tiangolo.com/)
 [![Rich](https://img.shields.io/badge/Rich-terminal-f59e0b)](https://github.com/Textualize/rich)
 [![PyYAML](https://img.shields.io/badge/PyYAML-config-ef4444)](https://pyyaml.org/)
+[![Hatchling](https://img.shields.io/badge/Hatchling-build%20backend-4b5563)](pyproject.toml)
 
-[![pytest](https://img.shields.io/badge/pytest-92%20tests%2Fplatform-0ea5e9)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
+[![pytest](https://img.shields.io/badge/pytest-92%20passing-0ea5e9)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
 [![Ruff](https://img.shields.io/badge/Ruff-lint%20%2B%20format-111827)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
 [![Build](https://img.shields.io/badge/build-wheel%20verified-2563eb)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
 [![CLI smoke](https://img.shields.io/badge/CLI-smoke%20tested-14b8a6)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
-[![MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![E2E demo](https://img.shields.io/badge/E2E%20demo-verified-0f766e)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
+[![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Linux%20%7C%20macOS-blue)](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml)
 
 </div>
 
@@ -40,7 +45,7 @@ FileFlow is designed for real local-file automation and as a portfolio demonstra
 
 ## Technology stack
 
-Python **3.14+**, Typer, Rich, PyYAML, pathlib and the Python standard library. Hatchling builds the package; pytest and Ruff provide the quality gates. GitHub Actions validates Linux, Windows and macOS. No cloud service, database, daemon or credentials are required.
+Python **3.14+**, Typer, Rich, PyYAML, pathlib and the Python standard library. Hatchling builds the package; pytest and Ruff provide the quality gates. GitHub Actions validates Linux, Windows and macOS. No cloud service, database, daemon or credentials are required. The source package version is **0.1.0**, as declared in `pyproject.toml`; this is not a PyPI release.
 
 ## Installation
 
@@ -172,6 +177,8 @@ python examples/demo.py
 All tests that modify files use isolated pytest `tmp_path` directories. The demonstration creates temporary input/output folders, runs the **real CLI** in subprocesses, previews an operation, demonstrates a destination collision, executes the move and reverses it. It doesn't touch personal files. Its real output is included in the **Demo CLI end-to-end** step of [GitHub Actions](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml) on Ubuntu, Windows and macOS. There are no fabricated screenshots or claimed benchmarks.
 
 The workflow runs on pull requests and pushes to `main`. The badge reflects GitHub Actions on the default branch, not a PyPI publication or production deployment.
+
+**Badge maintenance:** The pytest badge is a static snapshot of **92 passing tests per platform**, confirmed by [GitHub Actions run #42732136463](https://github.com/RamonRDR/fileflow-cli/actions/runs/42732136463). CI generates JUnit XML and verifies the count in all three languages. When test counts change, update every badge in the same PR. See [Badge inventory](docs/BADGES.md).
 
 ## Known limitations
 
