@@ -1,0 +1,12 @@
+# FileFlow rules (schema version 1)
+version: 1
+mode: category
+recursive: false
+by_date: false
+categories:
+  Research:
+    - .pdf
+    - .ipynb
+exclude:
+  - "*.tmp"
+  - "cache/**"

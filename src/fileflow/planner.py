@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from fileflow.models import Move, Plan, SortMode
-from fileflow.rules import destination_group, parse_categories
+from fileflow.rules import destination_group, excluded, parse_categories, validate_exclusions
 
 
 def fingerprint(info: os.stat_result) -> tuple[int, int, int, int]:
@@ -62,6 +62,28 @@ def _available_path(requested: Path, taken: set[str]) -> Path:
     return candidate
 
 
+def _candidates(source: Path, *, recursive: bool, patterns: tuple[str, ...]):
+    """Yield non-hidden, regular files without descending into links or excluded dirs."""
+    folders = [source]
+    while folders:
+        folder = folders.pop()
+        for path in sorted(folder.iterdir(), key=lambda item: (item.name.casefold(), item.name)):
+            relative = path.relative_to(source).as_posix()
+            if path.name.startswith(".") or path.is_symlink() or excluded(relative, patterns):
+                yield path, None
+                continue
+            info = path.stat(follow_symlinks=False)
+            if stat.S_ISDIR(info.st_mode):
+                if recursive:
+                    folders.append(path)
+                else:
+                    yield path, None
+            elif stat.S_ISREG(info.st_mode):
+                yield path, info
+            else:
+                yield path, None
+
+
 def build_plan(
     source: Path,
     destination: Path,
@@ -69,24 +91,21 @@ def build_plan(
     mode: SortMode = SortMode.extension,
     by_date: bool = False,
     category_rules: tuple[str, ...] = (),
+    recursive: bool = False,
+    exclude_patterns: tuple[str, ...] = (),
 ) -> Plan:
-    """List immediate child files and propose safe, unique destination names."""
+    """Discover files, applying strict roots, exclusions and deterministic naming."""
     source, destination = validate_roots(source, destination)
     categories = parse_categories(category_rules)
+    patterns = validate_exclusions(exclude_patterns)
     if category_rules and mode is not SortMode.category:
-        raise ValueError("--category requires --mode category")
+        raise ValueError("--category or YAML categories requires --mode category")
 
     planned: list[Move] = []
     taken: set[str] = set()
     ignored = 0
-    for path in sorted(source.iterdir(), key=lambda item: (item.name.casefold(), item.name)):
-        # Never follow symlinks, including symlinks that point to regular files.
-        if path.is_symlink() or path.name.startswith(".") or not path.is_file():
-            ignored += 1
-            continue
-
-        info = path.stat(follow_symlinks=False)
-        if not stat.S_ISREG(info.st_mode):
+    for path, info in _candidates(source, recursive=recursive, patterns=patterns):
+        if info is None:
             ignored += 1
             continue
         grouping = destination_group(path, mode, categories)

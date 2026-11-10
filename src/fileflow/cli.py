@@ -7,6 +7,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from fileflow.config import Settings, load_config
 from fileflow.executor import execute_plan
 from fileflow.models import Plan, SortMode
 from fileflow.planner import build_plan
@@ -41,8 +42,8 @@ def organize(
         Path, typer.Option("--destination", "-d", help="Separate destination directory.")
     ],
     mode: Annotated[
-        SortMode, typer.Option("--mode", "-m", help="Group by extension or category.")
-    ] = SortMode.extension,
+        SortMode | None, typer.Option("--mode", "-m", help="Group by extension or category.")
+    ] = None,
     by_date: Annotated[
         bool, typer.Option("--by-date", help="Add UTC YYYY/MM directories within each group.")
     ] = False,
@@ -51,20 +52,30 @@ def organize(
     ] = False,
     category: Annotated[
         list[str] | None,
-        typer.Option(
-            "--category",
-            help="Custom mapping, e.g. --category 'Research=.pdf,.md'. Repeatable; category mode only.",
-        ),
+        typer.Option("--category", help="Custom mapping Name=.pdf,.md (repeatable)."),
+    ] = None,
+    config: Annotated[
+        Path | None, typer.Option("--config", help="Versioned YAML configuration file.")
+    ] = None,
+    recursive: Annotated[
+        bool, typer.Option("--recursive", "-r", help="Include files in subdirectories.")
+    ] = False,
+    exclude: Annotated[
+        list[str] | None,
+        typer.Option("--exclude", help="Skip matching file/directory glob pattern; repeatable."),
     ] = None,
 ) -> None:
-    """Organize immediate child files without overwriting existing files."""
+    """Organize files without overwriting existing files."""
     try:
+        settings = load_config(config) if config is not None else Settings()
         plan = build_plan(
             source,
             destination,
-            mode=mode,
-            by_date=by_date,
-            category_rules=tuple(category or ()),
+            mode=mode if mode is not None else settings.mode,
+            by_date=by_date or settings.by_date,
+            category_rules=(*settings.category_rules, *(category or ())),
+            recursive=recursive or settings.recursive,
+            exclude_patterns=(*settings.exclude, *(exclude or ())),
         )
     except (ValueError, OSError) as exc:
         console.print(f"[red]Cannot plan: {exc}[/red]")
