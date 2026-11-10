@@ -33,9 +33,7 @@ def check_prose_counts(name: str, content: str, passed: int) -> None:
     if not counts:
         raise ValueError(f"{name}: expected a documented passing-test count")
     if any(value != passed for value in counts):
-        raise ValueError(
-            f"{name}: test-count prose {counts} disagrees with CI ({passed} passing)"
-        )
+        raise ValueError(f"{name}: test-count prose {counts} disagrees with CI ({passed} passing)")
 
 
 def passed_from_junit(report: Path) -> tuple[int, int, int, int, int]:
