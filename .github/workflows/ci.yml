@@ -37,7 +37,10 @@ jobs:
         run: ruff format --check .
 
       - name: Pytest
-        run: python -m pytest -q
+        run: python -m pytest -q --junitxml=pytest-results.xml
+
+      - name: Verify multilingual README test badges
+        run: python examples/verify_readme_badges.py pytest-results.xml
 
       - name: Build distributions
         run: python -m build
