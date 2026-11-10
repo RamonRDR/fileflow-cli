@@ -38,7 +38,6 @@ def check_prose_counts(name: str, content: str, passed: int) -> None:
         )
 
 
-
 def passed_from_junit(report: Path) -> tuple[int, int, int, int, int]:
     root = ET.parse(report).getroot()
     if root.tag == "testsuite":
