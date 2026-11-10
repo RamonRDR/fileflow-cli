@@ -12,7 +12,7 @@
 
 </div>
 
-> **Estado:** candidato funcional aguardando revisão técnica final e autorização para integrar os PRs. Nenhuma publicação no PyPI foi realizada. Enquanto os PRs estiverem abertos, instale a branch final de desenvolvimento, não a `main`.
+> **Estado:** desenvolvimento concluído, revisão final do Codex realizada e código integrado à `main`. GitHub Actions aprovado em Windows, Ubuntu e macOS (92 testes por plataforma). O pacote ainda não foi publicado no PyPI.
 
 ## Objetivo e funcionalidades
 
@@ -49,7 +49,7 @@ fileflow organize --help
 fileflow undo --help
 ~~~
 
-Os PRs ainda não estão na `main`; selecione a branch mais recente antes de instalar a versão de desenvolvimento. O pacote **não** está publicado no PyPI. O comando `python -m fileflow` também funciona.
+A implementação completa está disponível na branch padrão, **`main`**. O pacote **não** está publicado no PyPI. O comando `python -m fileflow` também funciona.
 
 ## Exemplos de comandos
 
@@ -154,7 +154,7 @@ python examples/wheel_smoke.py
 python examples/demo.py
 ~~~
 
-Os testes usam apenas diretórios temporários do pytest. O demo executa a CLI real em `TemporaryDirectory`, demonstra dry-run, movimentação com nome duplicado, exclusões e undo. A saída verdadeira aparece na etapa **Demo CLI end-to-end** do [GitHub Actions](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml) em Windows, Linux e macOS. Não há capturas ou resultados inventados. O badge acompanha o estado do workflow da branch principal, não a publicação de PRs pendentes.
+Os testes usam apenas diretórios temporários do pytest. O demo executa a CLI real em `TemporaryDirectory`, demonstra dry-run, movimentação com nome duplicado, exclusões e undo. A saída verdadeira aparece na etapa **Demo CLI end-to-end** do [GitHub Actions](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml) em Windows, Linux e macOS. Não há capturas ou resultados inventados. O badge acompanha o estado do workflow da branch principal; não significa publicação no PyPI ou implantação em produção.
 
 ## Limitações conhecidas
 

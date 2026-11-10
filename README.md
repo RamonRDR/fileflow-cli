@@ -12,7 +12,7 @@
 
 </div>
 
-> **Release status:** feature-complete candidate, pending final review and owner-approved merges. Not published on PyPI. While the pull-request stack is open, install the latest feature branch rather than `main`.
+> **Project status:** Implemented, independently reviewed by Codex, and integrated into `main`. GitHub Actions passed on Windows, Ubuntu and macOS (92 tests per platform). Not published on PyPI.
 
 FileFlow is designed for real local-file automation and as a portfolio demonstration of modular Python engineering, explicit safety decisions and multi-platform testing.
 
@@ -36,7 +36,7 @@ Python **3.14+**, Typer, Rich, PyYAML, pathlib and the Python standard library. 
 
 ## Installation
 
-Clone a revision containing the feature-complete PR stack:
+Clone the latest version from `main`:
 
 ~~~bash
 git clone https://github.com/RamonRDR/fileflow-cli.git
@@ -53,7 +53,7 @@ fileflow organize --help
 fileflow undo --help
 ~~~
 
-The package is **not** published to PyPI. Before the stacked PRs are merged, check out the latest development branch; the default branch does not yet include this implementation. You may also invoke the CLI with `python -m fileflow`.
+The complete implementation is in the default branch, **`main`**. The package is **not** published on PyPI. You may also invoke the CLI with `python -m fileflow`.
 
 ## Quick start
 
@@ -163,7 +163,7 @@ python examples/demo.py
 
 All tests that modify files use isolated pytest `tmp_path` directories. The demonstration creates temporary input/output folders, runs the **real CLI** in subprocesses, previews an operation, demonstrates a destination collision, executes the move and reverses it. It doesn't touch personal files. Its real output is included in the **Demo CLI end-to-end** step of [GitHub Actions](https://github.com/RamonRDR/fileflow-cli/actions/workflows/ci.yml) on Ubuntu, Windows and macOS. There are no fabricated screenshots or claimed benchmarks.
 
-The workflow runs on pull requests and pushes to `main`. The badge reflects GitHub's actual state, not a guarantee that unmerged features are already on the default branch.
+The workflow runs on pull requests and pushes to `main`. The badge reflects GitHub Actions on the default branch, not a PyPI publication or production deployment.
 
 ## Known limitations
 

@@ -1,0 +1,56 @@
+name: One-time cleanup of merged FileFlow branches
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/cleanup-merged-branches.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  prune:
+    if: github.repository == 'RamonRDR/fileflow-cli' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete only known merged branches at verified commits
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          while IFS="|" read -r branch expected_sha pr; do
+            actual_sha="$(gh api "repos/$GH_REPO/git/ref/heads/$branch" --jq ".object.sha")"
+            if [[ "$actual_sha" != "$expected_sha" ]]; then
+              echo "::error::Branch $branch moved ($actual_sha); refuse deletion"
+              exit 1
+            fi
+            merged="$(gh api "repos/$GH_REPO/pulls/$pr" --jq ".merged")"
+            if [[ "$merged" != "true" ]]; then
+              echo "::error::PR #$pr is not merged; refuse deletion"
+              exit 1
+            fi
+            gh api --method DELETE "repos/$GH_REPO/git/refs/heads/$branch" > /dev/null
+            echo "Deleted merged branch: $branch"
+          done <<'MERGED_BRANCHES'
+          feat/cycle-1-safe-file-organizer|49a0ff5537fc07e836ac4d13072dd5b458473eec|1
+          feat/cycle-2-config-and-recursion|a9f4d925a5268b2659014f81f7c66839aa1cae59|2
+          feat/cycle-2-operation-journal-and-undo|0d2cb44e73c59d32004ea28c46bb1ae6ce353c76|3
+          docs/cycle-3-release-readiness|c001a0839cfe852d99eedbf8cff374686e039e81|4
+          MERGED_BRANCHES
+          
+          # The maintenance PR branch must also be merged and match main exactly.
+          # This also avoids leaving an extra temporary branch after cleanup.
+          cleanup_branch="chore/fileflow-release-cleanup"
+          cleanup_sha="$(gh api "repos/$GH_REPO/git/ref/heads/$cleanup_branch" --jq ".object.sha")"
+          main_sha="$(gh api "repos/$GH_REPO/branches/main" --jq ".commit.sha")"
+          cleanup_tree="$(gh api "repos/$GH_REPO/git/commits/$cleanup_sha" --jq ".tree.sha")"
+          main_tree="$(gh api "repos/$GH_REPO/git/commits/$main_sha" --jq ".tree.sha")"
+          if [[ "$cleanup_tree" != "$main_tree" ]]; then
+            echo "::error::Maintenance branch differs from main; refuse deletion"
+            exit 1
+          fi
+          gh api --method DELETE "repos/$GH_REPO/git/refs/heads/$cleanup_branch" > /dev/null
+          echo "Deleted verified maintenance branch: $cleanup_branch"
