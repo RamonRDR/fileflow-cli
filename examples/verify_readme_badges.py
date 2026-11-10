@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import sys
+import tomllib
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -13,6 +14,29 @@ BADGE_RE = re.compile(
     r"!\[pytest\]\(https://img\.shields\.io/badge/pytest-(\d+)%20passing-[A-Za-z0-9]+\)"
 )
 IMAGE_RE = re.compile(r"!\[[^\]]+\]\((https://(?:img\.shields\.io|github\.com)/[^\s)]+)\)")
+TEST_COUNT_RE = re.compile(
+    r"\b(\d+)\s+(?:passing\s+tests|tests|testes|pruebas|passing)\b", re.IGNORECASE
+)
+VERSION_BADGE_RE = re.compile(
+    r"!\[Version\]\(https://img\.shields\.io/badge/version-([0-9.]+)-[A-Za-z0-9]+\)"
+)
+LANGUAGE_LINKS = (
+    "[🇺🇸 English](README.md)",
+    "[🇧🇷 Português](README.pt-BR.md)",
+    "[🇪🇸 Español](README.es.md)",
+)
+
+
+def check_prose_counts(name: str, content: str, passed: int) -> None:
+    """Reject stale test counts in prose, not only in the badge URL."""
+    counts = [int(value) for value in TEST_COUNT_RE.findall(content)]
+    if not counts:
+        raise ValueError(f"{name}: expected a documented passing-test count")
+    if any(value != passed for value in counts):
+        raise ValueError(
+            f"{name}: test-count prose {counts} disagrees with CI ({passed} passing)"
+        )
+
 
 
 def passed_from_junit(report: Path) -> tuple[int, int, int, int, int]:
@@ -36,10 +60,14 @@ def passed_from_junit(report: Path) -> tuple[int, int, int, int, int]:
 
 
 def check_readmes(passed: int) -> None:
+    package_version = tomllib.loads(
+        (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    )["project"]["version"]
     headers = []
     for name in READMES:
         path = ROOT / name
         text = path.read_text(encoding="utf-8")
+        check_prose_counts(name, text, passed)
         matches = BADGE_RE.findall(text)
         if len(matches) != 1:
             raise ValueError(f"{name}: expected exactly one pytest passing-count badge")
@@ -53,7 +81,17 @@ def check_readmes(passed: int) -> None:
         end = text.find("</div>", start)
         if start < 0 or end < 0:
             raise ValueError(f"{name}: missing centered header")
-        badges = IMAGE_RE.findall(text[start:end])
+        header = text[start:end]
+        for link in LANGUAGE_LINKS:
+            if link not in header:
+                raise ValueError(f"{name}: missing language navigation link: {link}")
+        version_badges = VERSION_BADGE_RE.findall(header)
+        if version_badges != [package_version]:
+            raise ValueError(
+                f"{name}: version badge {version_badges} disagrees with "
+                f"pyproject.toml ({package_version})"
+            )
+        badges = IMAGE_RE.findall(header)
         if len(badges) != 14:
             raise ValueError(f"{name}: expected 14 technical badges, found {len(badges)}")
         headers.append(badges)
@@ -65,6 +103,8 @@ def check_readmes(passed: int) -> None:
                 raise ValueError(f"{name}: missing relative link target: {link}")
     if headers[0] != headers[1] or headers[0] != headers[2]:
         raise ValueError("Technical badge URLs differ across README languages")
+    inventory = ROOT / "docs" / "BADGES.md"
+    check_prose_counts("docs/BADGES.md", inventory.read_text(encoding="utf-8"), passed)
 
 
 def main() -> int:
